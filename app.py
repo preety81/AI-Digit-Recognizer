@@ -7,10 +7,9 @@ import cv2
 import numpy as np
 import pandas as pd
 
-# 1. Page Setting (Wider layout ke liye)
+
 st.set_page_config(page_title="AI Digit Recognizer", page_icon="✨", layout="wide")
 
-# 2. Custom HTML/CSS Styling
 st.markdown("""
     <style>
     .main-title { font-size: 45px; color: #FF4B4B; font-weight: bold; text-align: center; margin-bottom: 0px;}
@@ -22,7 +21,7 @@ st.markdown("""
 st.markdown('<p class="main-title">Identify Digits? ✨</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">  Draw any digit using your mouse and let the AI predict it!    </p>', unsafe_allow_html=True)
 
-# 3. Naya CNN Model aur Loading (Same purana wala)
+
 class MeraModel(nn.Module):
     def __init__(self):
         super(MeraModel, self).__init__()
@@ -44,11 +43,10 @@ model = MeraModel()
 model.load_state_dict(torch.load('mera_digit_model.pth'))
 model.eval()
 
-# 4. Page ko 2 Columns mein batna
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("### ✍️  Draw your number here -- 0 to 9 ")
+    st.markdown("###   Draw your number here -- 0 to 9 ")
     canvas_result = st_canvas(
         fill_color="black",
         stroke_width=20,
@@ -60,13 +58,13 @@ with col1:
         key="canvas",
     )
     
-    predict_btn = st.button('🚀  See Result', use_container_width=True)
+    predict_btn = st.button('Show Result', use_container_width=True)
 
 with col2:
-    st.markdown("### 🤖 Brain of AI")
+    st.markdown("Brain of AI")
     
     if predict_btn and canvas_result.image_data is not None:
-        # Image Preprocessing (Wahi border add karne wali trick)
+
         img = cv2.cvtColor(canvas_result.image_data, cv2.COLOR_RGBA2GRAY)
         img = cv2.copyMakeBorder(img, 40, 40, 40, 40, cv2.BORDER_CONSTANT, value=0)
         img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
@@ -74,16 +72,14 @@ with col2:
         img_tensor = torch.tensor(img, dtype=torch.float32) / 255.0
         img_tensor = img_tensor.unsqueeze(0).unsqueeze(0) 
         
-        # Model Prediction aur Probabilities nikalna
+        
         with torch.no_grad():
             output = model(img_tensor)
-            # Softmax use karke raw score ko percentage (0-100) mein badalna
             probabilities = F.softmax(output[0], dim=0).numpy() * 100
             _, predicted = torch.max(output.data, 1)
             
-        st.markdown(f'<p class="result-text">Answer is : {predicted.item()} 🎉</p>', unsafe_allow_html=True)
-        
-        # Bar Chart banana
+        st.markdown(f'<p class="result-text">Answer is : {predicted.item()} </p>', unsafe_allow_html=True)
+    
         st.write("**Model Confidence (Percentage %):**")
         chart_data = pd.DataFrame(
             probabilities,
@@ -92,4 +88,4 @@ with col2:
         )
         st.bar_chart(chart_data)
     else:
-        st.info("Bahar draw karne ke baad 'Result Btao!' button par click karo.")
+        st.info("Once you're done drawing, click the 'Show Result!' button.")
