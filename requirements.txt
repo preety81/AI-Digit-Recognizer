@@ -3,3 +3,4 @@ torch
 torchvision
 streamlit-drawable-canvas
 numpy
+opencv-python-headless
